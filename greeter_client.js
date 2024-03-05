@@ -16,9 +16,9 @@
  *
  */
 
-// Requiring the lodash library  
-const _ = require("lodash");            
-    
+// Requiring the lodash library
+const _ = require("lodash");
+
 var PROTO_PATH = __dirname + '/helloworld.proto';
 
 var grpc = require('@grpc/grpc-js');
@@ -35,8 +35,9 @@ var packageDefinition = protoLoader.loadSync(
     });
 var hello_proto = grpc.loadPackageDefinition(packageDefinition).helloworld;
 
-function main() {  
+function main() {
   var client = new hello_proto.Greeter('greeter-server:50051', grpc.credentials.createInsecure());
+  ));
 
   let hello = _.times(100, (i) => (
     client.sayHello({name: 'Anvil User!'}, function(err, response) {

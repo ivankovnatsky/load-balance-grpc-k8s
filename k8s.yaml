@@ -1,7 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: grpcdemo
+  labels:
+    istio-injection: enabled
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: greeter-server
+  namespace: grpcdemo
 spec:
   selector:
     matchLabels:
@@ -21,19 +29,25 @@ spec:
         imagePullPolicy: Always
         command:
           - node
-          - greeter_server
+          - greeter_server.js
+        env:
+        - name: GRPC_VERBOSITY
+          value: DEBUG
+        - name: GRPC_TRACE
+          value: http
         resources:
           limits:
             cpu: 1000m
             memory: 1Gi
           requests:
-            cpu: 750m
-            memory: 512Mi
+            cpu: 50m
+            memory: 100Mi
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: greeter-server
+  namespace: grpcdemo
 spec:
   selector:
     app: greeter-server
@@ -47,6 +61,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: greeter-client
+  namespace: grpcdemo
 spec:
   selector:
     matchLabels:
@@ -64,11 +79,22 @@ spec:
         command:
           - /bin/sh
           - -c
-          - 'sleep 1800' # 30m TTL
+          - 'sleep infinity'
         resources:
           limits:
             cpu: 750m
             memory: 1.5Gi
           requests:
-            cpu: 500m
-            memory: 1Gi
+            cpu: 50m
+            memory: 100Mi
+---
+apiVersion: getambassador.io/v2
+kind: Mapping
+metadata:
+  name: greeter-server
+  namespace: grpcdemo
+spec:
+  host: greeter.[redacted].com
+  grpc: true
+  prefix: /
+  service: http://greeter-server:50051
